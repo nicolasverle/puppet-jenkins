@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+if [ -f /etc/yum.repos.d/jenkins.repo ]; then
+ sudo rpm --import http://pkg.jenkins-ci.org/redhat/jenkins-ci.org.key
+ sudo wget -O /etc/yum.repos.d/jenkins.repo http://pkg.jenkins-ci.org/redhat/<%= @repo_url %>
+fi
+exit 0
