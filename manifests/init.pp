@@ -2,10 +2,11 @@
 class jenkins (
 	$version = undef,
 	$context_path = undef,
-	$port = undef
+	$http_port = 8080,
+	$https_port = undef,
+	$java_cmd = undef,
+	$apache_frontend = false
 ) {
-	
-	class { "::java": }
 	
 	jenkins::repo {'add-repo':}
 	
@@ -19,24 +20,22 @@ class jenkins (
       default               		=> undef
     }
 	
-	if ($context_path != undef) {
-		$_context_path = "\"--prefix=/${context_path}\""
-		augeas { 'set_context_path':
-			lens	=> "Properties.lns",
-			incl	=> "${config_file}",
-			changes	=> "set JENKINS_ARGS '$_context_path'",
-			require	=> Package['jenkins']
-		}
+	$_context_path = $context_path ? {
+		undef	=> undef,
+		""		=> undef,
+		default	=> "set JENKINS_ARGS \"'--prefix=/${context_path}'\""
 	}
-	
-	if ($port != undef) {
-		$_port = "\"${port}\""
-		augeas { 'set_port':
-			lens	=> "Properties.lns",
-			incl	=> "${config_file}",
-			changes	=> "set JENKINS_PORT '$_port}'",
-			require	=> Package['jenkins']
-		}
+	$_http_port = $http_port ? {
+		undef	=> undef,
+		""		=> undef,
+		default	=> "set JENKINS_PORT \"'${http_port}'\""
+	}
+	augeas { 'set_context_path':
+		lens	=> "Properties.lns",
+		incl	=> "${config_file}",
+		changes	=> delete_undef_values( [$_context_path, $_http_port] ),
+		require	=> Package['jenkins'],
+		notify	=> Service['jenkins']
 	}
 	
 	file { "/var/lib/jenkins/config.xml": 
@@ -60,6 +59,13 @@ class jenkins (
 		group 	=> "jenkins",
 		owner 	=> "jenkins",
 		require => Package["jenkins"]
+	}
+	
+	if($apache_frontend) {
+		jenkins::apache { 'add_frontend': 
+			jenkins_alias	=> $context_path,
+			jenkins_port	=> $http_port
+		}
 	}
 		
 	service { "jenkins":
