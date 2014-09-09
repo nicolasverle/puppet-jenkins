@@ -1,7 +1,7 @@
 ProxyPass         /<%= @jenkins_alias %>  http://localhost:<%= @jenkins_port %>/<%= @jenkins_alias %> nocanon
 ProxyPassReverse  /<%= @jenkins_alias %>  http://localhost:<%= @jenkins_port %>/<%= @jenkins_alias %>
 ProxyRequests     Off
-<% if scope.function_versioncmp([@httpd_version, "2.2.18"]) >= 0 %>
+<% if scope.function_versioncmp([@toto_version, "2.2.18"]) >= 0 %>
 AllowEncodedSlashes NoDecode
 <% else %>
 AllowEncodedSlashes On

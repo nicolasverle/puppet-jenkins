@@ -19,6 +19,7 @@ This module provides following functionnalities :
 * puppet >= 3.6
 * augeas >= 1.0.0
 * puppet stdlib module (https://forge.puppetlabs.com/puppetlabs/stdlib)
+* puppet apt module if using a Debian (https://forge.puppetlabs.com/puppetlabs/apt)
 
 ## Usage
 

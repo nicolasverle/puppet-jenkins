@@ -10,8 +10,10 @@ define jenkins::repo {
 			
 			apt::source { 'jenkins':
 				location	=> 'http://pkg.jenkins-ci.org/debian',
-				repos		=> 'binary',
+				release		=> 'binary/',
+				repos		=> '',
 				comment		=> 'Jenkins debian repository',
+				include_src => false,
 				require		=> Apt::Key['jenkins_key']
 			}
 			
@@ -19,9 +21,9 @@ define jenkins::repo {
 		/(?i:CentOS|RedHat|Fedora)/: {
 			
 			yumrepo { 'jenkins':
-				baseurl				=> "http://pkg.jenkins-ci.org/redhat",
-				descr				=> 'jenkins repository',
-				gpgcheck			=> 1
+				baseurl		=> "http://pkg.jenkins-ci.org/redhat",
+				descr		=> 'jenkins repository',
+				gpgcheck	=> 1
 			}
 			
 			exec { 'jenkins_key_RH': 
