@@ -1,8 +1,0 @@
-#!/usr/bin/env bash
-
-if [ ! -f /etc/apt/sources.list.d/jenkins.list ]; then
- wget -q -O - http://pkg.jenkins-ci.org/debian/jenkins-ci.org.key | sudo apt-key add -
- echo "deb http://pkg.jenkins-ci.org/debian binary/" > /etc/apt/sources.list.d/jenkins.list
- apt-get update > /dev/null 2>&1
-fi
-exit 0

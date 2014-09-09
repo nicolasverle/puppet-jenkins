@@ -21,6 +21,7 @@ See https://wiki.jenkins-ci.org/display/JENKINS/Jenkins+says+my+reverse+proxy+se
 			}
 			
 			service { 'httpd': 
+				enable	=> "true",
 				ensure	=> "running"
 			}
 			

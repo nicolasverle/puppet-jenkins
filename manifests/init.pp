@@ -30,28 +30,22 @@ class jenkins (
 		""		=> undef,
 		default	=> "set JENKINS_PORT \"'${http_port}'\""
 	}
+	$_https_port = $https_port ? {
+		undef	=> undef,
+		""		=> undef,
+		default	=> "set JENKINS_HTTPS_PORT \"'${https_port}'\""
+	}
+	$_java_cmd = $java_cmd ? {
+		undef	=> undef,
+		""		=> undef,
+		default	=> "set JENKINS_JAVA_CMD \"'${java_cmd}'\""
+	}
 	augeas { 'set_context_path':
 		lens	=> "Properties.lns",
 		incl	=> "${config_file}",
-		changes	=> delete_undef_values( [$_context_path, $_http_port] ),
+		changes	=> delete_undef_values( [$_context_path, $_http_port, $_https_port, $_java_cmd] ),
 		require	=> Package['jenkins'],
 		notify	=> Service['jenkins']
-	}
-	
-	file { "/var/lib/jenkins/config.xml": 
-		ensure 	=> "present",
-		group 	=> "jenkins",
-		owner 	=> "jenkins",
-		source 	=> "puppet:///modules/jenkins/config.xml",
-		require => Package["jenkins"]
-	}
-	
-	file { "/var/lib/jenkins/hudson.tasks.Maven.xml": 
-		ensure 	=> "present",
-		source 	=> "puppet:///modules/jenkins/hudson.tasks.Maven.xml",
-		group 	=> "jenkins",
-		owner 	=> "jenkins",
-		require => Package["jenkins"]
 	}
 	
 	file { "/var/lib/jenkins/plugins":

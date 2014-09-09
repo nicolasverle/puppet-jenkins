@@ -27,7 +27,7 @@ define jenkins::repo {
 			exec { 'jenkins_key_RH': 
 				command	=> "rpm --import http://pkg.jenkins-ci.org/redhat/jenkins-ci.org.key",
 				path	=> ["/bin", "/usr/bin"],
-				onlyif	=> "test ! -d /etc/yum.repos.d/jenkins.repo",
+				creates	=> "/etc/yum.repos.d/jenkins.repo",
 				require	=> Yumrepo["jenkins"]
 			}
 			
