@@ -1,4 +1,6 @@
-define jenkins::repo {
+define jenkins::repo(
+	$version = undef
+) {
 
 	case $operatingsystem {
 		/(?i:Ubuntu|Debian|Mint)/: { 
@@ -21,8 +23,8 @@ define jenkins::repo {
 		/(?i:CentOS|RedHat|Fedora)/: {
 			
 			yumrepo { 'jenkins':
-				baseurl		=> "http://pkg.jenkins-ci.org/redhat",
-				descr		=> 'jenkins repository',
+				baseurl		=> $baseurl,
+				descr		=> 'http://pkg.jenkins-ci.org/redhat',
 				gpgcheck	=> 1
 			}
 			

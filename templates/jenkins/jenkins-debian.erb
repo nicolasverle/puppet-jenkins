@@ -49,11 +49,7 @@ MAXOPENFILES=8192
 UMASK=027
 
 # port for HTTP connector (default 8080; disable with -1)
-<% if @http_port != nil %>
 HTTP_PORT=<%= @http_port %>
-<% else %>
-HTTP_PORT=8080
-<% end %>
 
 # port for AJP connector (disabled by default)
 AJP_PORT=-1

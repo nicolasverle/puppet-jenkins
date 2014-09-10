@@ -30,7 +30,6 @@ define plugins::grab (
 	 file { "/var/lib/jenkins/plugins/${name}.hpi": 
 		ensure	=> "present",
 		owner	=> "jenkins",
-		group	=> "jenkins",
 		mode	=> "0644"
 	 }
 }

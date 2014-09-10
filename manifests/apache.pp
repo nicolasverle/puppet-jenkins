@@ -1,5 +1,5 @@
 define jenkins::apache(
-	$jenkins_alias = undef,
+	$jenkins_alias = '',
 	$jenkins_port = undef
 ) {
 	
@@ -11,34 +11,34 @@ define jenkins::apache(
 	
 	ensure_resource('package', $apache_service, {'ensure' => 'present'})
 	
-	if(versioncmp('2.2.18', $toto_version) > 0) {
-		warning("Your current version of Apache Server is ${toto_version} which might be not fully compatible with apache frontend jenkins requirement !
-For instance 'AllowEncodedSlashes' option cannot be set to 'NoDecode' with versions prior to 2.2.18. 
-See https://wiki.jenkins-ci.org/display/JENKINS/Jenkins+says+my+reverse+proxy+setup+is+broken for further details.")
-	}
-	
 	case $operatingsystem {
 		/(?i:CentOS|RedHat|Fedora)/: {
 			
 			file { '/etc/httpd/conf.d/jenkins.conf': 
 				ensure	=> 'present',
 				content	=> template('jenkins/apache/jenkins.conf.erb'),
+				require => Package[$apache_service],
 				notify	=> Service[$apache_service]
 			}
 			
 		}
 		/(?i:Ubuntu|Debian|Mint)/ : {
 			
-			file { '/etc/apache2/sites-available/jenkins.conf': 
+			exec { 'a2enmod proxy': 
+				path	=> ['/usr/sbin', '/usr/bin'], 
+				require	=> Package[$apache_service] 
+			} -> 
+			exec { 'a2enmod proxy_http': 
+				path	=> ['/usr/sbin', '/usr/bin'] 
+			} -> 
+			file { '/etc/apache2/conf-available/jenkins.conf': 
 				ensure	=> 'present',
 				content	=> template('jenkins/apache/jenkins.conf.erb')
 			} -> 
-			file { '/etc/apache2/sites-enabled/jenkins.conf': 
-				ensure	=> 'link',
-				target	=> '/etc/apache2/sites-available/jenkins.conf',
-				notify	=> Service[$apache_service]
+			exec { 'a2enconf jenkins.conf': 
+				path	=> ['/usr/sbin', '/usr/bin'], 
+				notify	=> Service[$apache_service] 
 			}
-
 			
 		} 
 		default: { fail("Sorry, but this module doesn't support ${operatingsystem} OS") }

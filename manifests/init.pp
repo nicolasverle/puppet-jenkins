@@ -1,41 +1,62 @@
 
 class jenkins (
-	$version = undef,
-	$context_path = undef,
-	$http_port = undef,
+	$version = 'latest',
+	$context_path = '',
+	$http_port = '8080',
 	$https_port = undef,
 	$java_cmd = undef,
 	$apache_frontend = false
 ) {
-	
-	jenkins::repo {'add-repo':}
-	
-	package { "jenkins": 
-		require	=> Jenkins::Repo['add-repo']
-	}
-	
+
 	$jenkins_template = $operatingsystem ? {
-      /(?i:CentOS|RedHat|Fedora)/	=> 'jenkins/jenkins/jenkins-redhat.erb',
-      /(?i:Ubuntu|Debian|Mint)/		=> 'jenkins/jenkins/jenkins-debian.erb',
-      default               		=> undef
+		/(?i:CentOS|RedHat|Fedora)/	=> 'jenkins/jenkins/jenkins-redhat.erb',
+		/(?i:Ubuntu|Debian|Mint)/	=> 'jenkins/jenkins/jenkins-debian.erb',
+		default               		=> undef
     }
 	$config_location = $operatingsystem ? {
-      /(?i:CentOS|RedHat|Fedora)/	=> '/etc/sysconfig/jenkins',
-      /(?i:Ubuntu|Debian|Mint)/		=> '/etc/default/jenkins',
-      default               		=> undef
+		/(?i:CentOS|RedHat|Fedora)/	=> '/etc/sysconfig/jenkins',
+		/(?i:Ubuntu|Debian|Mint)/	=> '/etc/default/jenkins',
+		default						=> undef
     }
 	
-	file { $config_location:
-		ensure 	=> "present", 
-		content	=> template($jenkins_template),
-		require => Package["jenkins"]
+	jenkins::repo {'add-repo':
+		version => $version
 	}
 	
-	file { "/var/lib/jenkins/plugins":
-		ensure 	=> "directory", 
-		group 	=> "jenkins",
-		owner 	=> "jenkins",
-		require => Package["jenkins"]
+	if($osfamily == 'debian' and $version != 'latest') {
+		# Ugly workaround for debian since the jenkins debian repository seems to be buggy 
+		# and only the latest jenkins version is available.
+		# See https://issues.jenkins-ci.org/browse/INFRA-92
+	
+		exec { 'grab deb jenkins': 
+			command	=> "wget -q http://pkg.jenkins-ci.org/debian/binary/jenkins_${version}_all.deb -O /tmp/jenkins_${version}_all.deb",
+			creates	=> '/var/lib/jenkins/',
+			path	=> ['/usr/bin'],
+			require	=> Jenkins::Repo['add-repo']
+		} -> 
+		package { 'daemon': 
+		} ->
+		package { 'jenkins': 
+			provider	=> 'dpkg',
+			source		=> "/tmp/jenkins_${version}_all.deb"
+		}
+	} else {
+		package { 'jenkins': 
+			ensure	=> $version,
+			require	=> Jenkins::Repo['add-repo']
+		}
+	}
+	
+	file { $config_location:
+		ensure 	=> 'present', 
+		content	=> template($jenkins_template),
+		require => Package['jenkins']
+	}
+	
+	file { '/var/lib/jenkins/plugins':
+		ensure 	=> 'directory', 
+		owner 	=> 'jenkins',
+		require => Package['jenkins']
 	}
 	
 	if($apache_frontend) {
@@ -45,9 +66,9 @@ class jenkins (
 		}
 	}
 		
-	service { "jenkins":
-		ensure 		=> "running",
-		require 	=> Package["jenkins"]
+	service { 'jenkins':
+		ensure 		=> 'running',
+		require 	=> Package['jenkins']
 	}
 
 }
