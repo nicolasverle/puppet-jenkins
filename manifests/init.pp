@@ -8,28 +8,32 @@ class jenkins (
 	$apache_frontend = false
 ) {
 
-	$jenkins_template = $operatingsystem ? {
-		/(?i:CentOS|RedHat|Fedora)/	=> 'jenkins/jenkins/jenkins-redhat.erb',
-		/(?i:Ubuntu|Debian|Mint)/	=> 'jenkins/jenkins/jenkins-debian.erb',
+	$jenkins_template = $osfamily ? {
+		'redhat'	=> 'jenkins/jenkins/jenkins-redhat.erb',
+		'debian'	=> 'jenkins/jenkins/jenkins-debian.erb',
 		default               		=> undef
     }
-	$config_location = $operatingsystem ? {
-		/(?i:CentOS|RedHat|Fedora)/	=> '/etc/sysconfig/jenkins',
-		/(?i:Ubuntu|Debian|Mint)/	=> '/etc/default/jenkins',
+	$config_location = $osfamily ? {
+		'redhat'	=> '/etc/sysconfig/jenkins',
+		'debian'	=> '/etc/default/jenkins',
 		default						=> undef
     }
 	
-	jenkins::repo {'add-repo':
-		version => $version
+	jenkins::repo {'add-repo': }
+	
+	if($version != 'latest' and $osfamily == 'redhat') {
+		$_version = "${version}-1.1"
+	} else {
+		$_version = $version
 	}
 	
-	if($osfamily == 'debian' and $version != 'latest') {
+	if($osfamily == 'debian' and $_version != 'latest') {
 		# Ugly workaround for debian since the jenkins debian repository seems to be buggy 
 		# and only the latest jenkins version is available.
 		# See https://issues.jenkins-ci.org/browse/INFRA-92
 	
 		exec { 'grab deb jenkins': 
-			command	=> "wget -q http://pkg.jenkins-ci.org/debian/binary/jenkins_${version}_all.deb -O /tmp/jenkins_${version}_all.deb",
+			command	=> "wget -q http://pkg.jenkins-ci.org/debian/binary/jenkins_${_version}_all.deb -O /tmp/jenkins_${_version}_all.deb",
 			creates	=> '/var/lib/jenkins/',
 			path	=> ['/usr/bin'],
 			require	=> Jenkins::Repo['add-repo']
@@ -38,11 +42,11 @@ class jenkins (
 		} ->
 		package { 'jenkins': 
 			provider	=> 'dpkg',
-			source		=> "/tmp/jenkins_${version}_all.deb"
+			source		=> "/tmp/jenkins_${_version}_all.deb"
 		}
 	} else {
 		package { 'jenkins': 
-			ensure	=> $version,
+			ensure	=> $_version,
 			require	=> Jenkins::Repo['add-repo']
 		}
 	}

@@ -3,16 +3,16 @@ define jenkins::apache(
 	$jenkins_port = undef
 ) {
 	
-	$apache_service = $operatingsystem ? {
-		/(?i:CentOS|RedHat|Fedora)/	=> 'httpd',
-		/(?i:Ubuntu|Debian|Mint)/	=> 'apache2',
+	$apache_service = $osfamily ? {
+		'redhat'	=> 'httpd',
+		'debian'	=> 'apache2',
 		default						=> undef
     }
 	
 	ensure_resource('package', $apache_service, {'ensure' => 'present'})
 	
-	case $operatingsystem {
-		/(?i:CentOS|RedHat|Fedora)/: {
+	case $osfamily {
+		'redhat': {
 			
 			file { '/etc/httpd/conf.d/jenkins.conf': 
 				ensure	=> 'present',
@@ -22,7 +22,7 @@ define jenkins::apache(
 			}
 			
 		}
-		/(?i:Ubuntu|Debian|Mint)/ : {
+		'debian' : {
 			
 			exec { 'a2enmod proxy': 
 				path	=> ['/usr/sbin', '/usr/bin'], 
@@ -41,7 +41,7 @@ define jenkins::apache(
 			}
 			
 		} 
-		default: { fail("Sorry, but this module doesn't support ${operatingsystem} OS") }
+		default: { fail("Sorry, but this module doesn't support ${osfamily} OS") }
     }
 	
 	service { $apache_service: 

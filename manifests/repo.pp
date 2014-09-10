@@ -1,9 +1,7 @@
-define jenkins::repo(
-	$version = undef
-) {
+define jenkins::repo {
 
-	case $operatingsystem {
-		/(?i:Ubuntu|Debian|Mint)/: { 
+	case $osfamily {
+		'debian': { 
 			
 			apt::key { 'jenkins_key':
 				key        => 'D50582E6',
@@ -20,11 +18,11 @@ define jenkins::repo(
 			}
 			
 		}
-		/(?i:CentOS|RedHat|Fedora)/: {
+		'redhat': {
 			
 			yumrepo { 'jenkins':
-				baseurl		=> $baseurl,
-				descr		=> 'http://pkg.jenkins-ci.org/redhat',
+				baseurl		=> "http://pkg.jenkins-ci.org/redhat",
+				descr		=> 'jenkins repository',
 				gpgcheck	=> 1
 			}
 			
@@ -36,6 +34,6 @@ define jenkins::repo(
 			}
 			
 		}
-		default: { fail("Sorry, but this module doesn't support ${operatingsystem} OS") }
+		default: { fail("Sorry, but this module doesn't support ${osfamily} OS") }
 	}
 }
