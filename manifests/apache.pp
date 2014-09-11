@@ -10,6 +10,11 @@ define jenkins::apache(
     }
 	
 	ensure_resource('package', $apache_service, {'ensure' => 'present'})
+	if versioncmp($apache_version, "2.2.18") < 0 {
+		$encoded_slashes = "On"
+	} else {
+		$encoded_slashes = "NoDecode"
+	}
 	
 	case $osfamily {
 		'redhat': {

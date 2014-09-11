@@ -1,11 +1,7 @@
 ProxyPass         /<%= @jenkins_alias %>  http://localhost:<%= @jenkins_port %>/<%= @jenkins_alias %> nocanon
 ProxyPassReverse  /<%= @jenkins_alias %>  http://localhost:<%= @jenkins_port %>/<%= @jenkins_alias %>
 ProxyRequests     Off
-<% if scope.function_versioncmp([scope.lookupvar('apache_version'), "2.2.18"]) >= 0 %>
-AllowEncodedSlashes NoDecode
-<% else %>
-AllowEncodedSlashes On
-<% end %>
+AllowEncodedSlashes <%= @encoded_slashes %>
 
 # Local reverse proxy authorization override
 # Most unix distribution deny proxy by default (ie /etc/apache2/mods-enabled/proxy.conf in Ubuntu)

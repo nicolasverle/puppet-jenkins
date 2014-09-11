@@ -16,9 +16,7 @@ This module provides following functionnalities :
 
 **This module requires :**
 
-* puppet >= 3.6
-* augeas >= 1.0.0
-* puppet stdlib module (https://forge.puppetlabs.com/puppetlabs/stdlib)
+* puppet >= 3.22
 * puppet apt module if using a Debian (https://forge.puppetlabs.com/puppetlabs/apt)
 
 ## Usage
@@ -27,6 +25,14 @@ This module provides following functionnalities :
 
 ```puppet
 	class { 'jenkins':  }
+```
+
+* Download and install jenkins-ci version 1.552 on port 8080 :
+
+```puppet
+	class { 'jenkins':  
+		version	=> '1.552'
+	}
 ```
 
 * Set jenkins-ci context path to "jenkins" and deploy it on 9081 port : 
@@ -55,7 +61,8 @@ This module provides following functionnalities :
 			'scp'		=> { version => 'latest'},
 			'groovy'	=> { version => '1.20'}
 		},
-		notify => Service['jenkins']
+		require	=> Package['jenkins']
+		notif	=> Service['jenkins']
 	}
 ```
 
