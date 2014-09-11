@@ -62,7 +62,7 @@ This module provides following functionnalities :
 			'groovy'	=> { version => '1.20'}
 		},
 		require	=> Package['jenkins']
-		notif	=> Service['jenkins']
+		notify	=> Service['jenkins']
 	}
 ```
 
